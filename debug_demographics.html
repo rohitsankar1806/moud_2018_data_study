@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Demographics</title>
+</head>
+<body>
+    <h1>Demographics Debug</h1>
+    <div id="debug-output"></div>
+    
+    <script>
+        async function debugDemographics() {
+            try {
+                const response = await fetch('dashboard_data.json');
+                const data = await response.json();
+                
+                const debugDiv = document.getElementById('debug-output');
+                debugDiv.innerHTML = `
+                    <h2>Demographics Data:</h2>
+                    <pre>${JSON.stringify(data.demographics, null, 2)}</pre>
+                    
+                    <h2>Sex Data Check:</h2>
+                    <p>Sex data exists: ${!!data.demographics.sex}</p>
+                    <p>Sex data keys: ${Object.keys(data.demographics.sex || {})}</p>
+                    <p>Sex data values: ${Object.values(data.demographics.sex || {})}</p>
+                `;
+            } catch (error) {
+                document.getElementById('debug-output').innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', debugDemographics);
+    </script>
+</body>
+</html>

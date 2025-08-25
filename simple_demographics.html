@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Demographics Display</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .demo-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .demo-item { margin: 5px 0; }
+        .demo-number { font-weight: bold; color: #1976d2; }
+    </style>
+</head>
+<body>
+    <h1>MOUD Study Demographics</h1>
+    <div id="demographics-display">Loading...</div>
+    
+    <script>
+        async function displayDemographics() {
+            try {
+                const response = await fetch('dashboard_data.json');
+                const data = await response.json();
+                const demographics = data.demographics;
+                
+                let html = `<h2>Total Patients: ${demographics.total_patients}</h2>`;
+                
+                // Gender/Sex
+                if (demographics.sex && Object.keys(demographics.sex).length > 0) {
+                    html += '<div class="demo-section"><h3>👥 Gender Distribution</h3>';
+                    Object.entries(demographics.sex).forEach(([gender, count]) => {
+                        const percent = ((count / demographics.total_patients) * 100).toFixed(1);
+                        html += `<div class="demo-item"><span class="demo-number">${count}</span> ${gender} (${percent}%)</div>`;
+                    });
+                    html += '</div>';
+                }
+                
+                // Age Categories
+                if (demographics.age_categories && Object.keys(demographics.age_categories).length > 0) {
+                    html += '<div class="demo-section"><h3>📊 Age Distribution</h3>';
+                    Object.entries(demographics.age_categories)
+                        .sort((a, b) => b[1] - a[1])
+                        .forEach(([age, count]) => {
+                            const percent = ((count / demographics.total_patients) * 100).toFixed(1);
+                            html += `<div class="demo-item"><span class="demo-number">${count}</span> ages ${age} (${percent}%)</div>`;
+                        });
+                    html += '</div>';
+                }
+                
+                // Race/Ethnicity
+                if (demographics.race_ethnicity && Object.keys(demographics.race_ethnicity).length > 0) {
+                    html += '<div class="demo-section"><h3>🌍 Race/Ethnicity</h3>';
+                    Object.entries(demographics.race_ethnicity)
+                        .sort((a, b) => b[1] - a[1])
+                        .forEach(([race, count]) => {
+                            const percent = ((count / demographics.total_patients) * 100).toFixed(1);
+                            html += `<div class="demo-item"><span class="demo-number">${count}</span> ${race} (${percent}%)</div>`;
+                        });
+                    html += '</div>';
+                }
+                
+                // Education
+                if (demographics.education && Object.keys(demographics.education).length > 0) {
+                    html += '<div class="demo-section"><h3>🎓 Education Level</h3>';
+                    Object.entries(demographics.education)
+                        .sort((a, b) => b[1] - a[1])
+                        .forEach(([edu, count]) => {
+                            const percent = ((count / demographics.total_patients) * 100).toFixed(1);
+                            html += `<div class="demo-item"><span class="demo-number">${count}</span> ${edu} (${percent}%)</div>`;
+                        });
+                    html += '</div>';
+                }
+                
+                // Employment
+                if (demographics.employment && Object.keys(demographics.employment).length > 0) {
+                    html += '<div class="demo-section"><h3>💼 Employment Status</h3>';
+                    Object.entries(demographics.employment)
+                        .sort((a, b) => b[1] - a[1])
+                        .forEach(([emp, count]) => {
+                            const percent = ((count / demographics.total_patients) * 100).toFixed(1);
+                            html += `<div class="demo-item"><span class="demo-number">${count}</span> ${emp} (${percent}%)</div>`;
+                        });
+                    html += '</div>';
+                }
+                
+                document.getElementById('demographics-display').innerHTML = html;
+                
+            } catch (error) {
+                document.getElementById('demographics-display').innerHTML = `<p>Error loading demographics: ${error.message}</p>`;
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', displayDemographics);
+    </script>
+</body>
+</html>

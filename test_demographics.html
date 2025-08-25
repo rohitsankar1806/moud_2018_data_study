@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Demographics Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Demographics Test</h1>
+    <div id="test-output"></div>
+    <canvas id="testChart" width="400" height="400"></canvas>
+    
+    <script>
+        async function testDemographics() {
+            try {
+                console.log('Starting demographics test...');
+                
+                // Load data
+                // Add cache-busting parameter
+                const cacheBuster = new Date().getTime();
+                const response = await fetch(`dashboard_data.json?v=${cacheBuster}`);
+                const data = await response.json();
+                console.log('Data loaded:', data);
+                
+                // Check demographics
+                const demographics = data.demographics;
+                console.log('Demographics:', demographics);
+                
+                document.getElementById('test-output').innerHTML = `
+                    <h2>Raw Demographics Data:</h2>
+                    <pre>${JSON.stringify(demographics, null, 2)}</pre>
+                    
+                    <h2>Sex Data:</h2>
+                    <p>Available: ${!!demographics.sex}</p>
+                    <p>Keys: ${Object.keys(demographics.sex || {})}</p>
+                    <p>Values: ${Object.values(demographics.sex || {})}</p>
+                    
+                    <h2>All Demographic Keys:</h2>
+                    <p>${Object.keys(demographics)}</p>
+                `;
+                
+                // Try to create chart
+                const ctx = document.getElementById('testChart');
+                const sexData = demographics.sex || {};
+                
+                if (Object.keys(sexData).length > 0) {
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: Object.keys(sexData),
+                            datasets: [{
+                                data: Object.values(sexData),
+                                backgroundColor: ['#4caf50', '#2196f3']
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Test Demographics Chart'
+                                }
+                            }
+                        }
+                    });
+                    console.log('Chart created successfully');
+                } else {
+                    console.error('No sex data for chart');
+                }
+                
+            } catch (error) {
+                console.error('Test failed:', error);
+                document.getElementById('test-output').innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', testDemographics);
+    </script>
+</body>
+</html>

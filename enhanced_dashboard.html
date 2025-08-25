@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOUD Study Dashboard - Enhanced</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #1d1d1f;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #007AFF 0%, #5856D6 50%, #AF52DE 100%);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+            margin-bottom: 50px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 122, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+        
+        .header p {
+            font-size: 1.4rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-bottom: 50px;
+            overflow: hidden;
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 20px 30px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            color: #666;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+            transition: left 0.6s;
+        }
+        
+        .nav-tab:hover::before {
+            left: 100%;
+        }
+        
+        .nav-tab.active {
+            background: linear-gradient(135deg, #007AFF, #5856D6);
+            color: white;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            transform: scale(1.02);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+            margin-bottom: 50px;
+            overflow: hidden;
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,250,252,0.9));
+            padding: 30px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .card-header h3 {
+            color: #1d1d1f;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .card-content {
+            padding: 40px;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin: 30px 0;
+        }
+        
+        .demographics-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+        }
+        
+        .demo-selector {
+            background: rgba(248, 250, 252, 0.8);
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .demo-selector h4 {
+            margin-bottom: 15px;
+            color: #1d1d1f;
+            font-size: 1.2rem;
+        }
+        
+        .demo-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-btn {
+            padding: 10px 20px;
+            background: rgba(0, 122, 255, 0.1);
+            border: 2px solid #007AFF;
+            border-radius: 25px;
+            color: #007AFF;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .demo-btn:hover {
+            background: #007AFF;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .demo-btn.active {
+            background: #007AFF;
+            color: white;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%);
+            border-left: 5px solid #007AFF;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0, 122, 255, 0.1);
+        }
+        
+        .info-box h4 {
+            color: #007AFF;
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+        }
+        
+        .info-box ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .info-box li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 122, 255, 0.1);
+            font-size: 1.1rem;
+        }
+        
+        .info-box li:last-child {
+            border-bottom: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 122, 255, 0.1);
+            border-top: 4px solid #007AFF;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 30px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 1024px) {
+            .demographics-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🏥 MOUD Study Dashboard</h1>
+            <p>Advanced Analytics for Opioid Use Disorder Treatment</p>
+        </header>
+        
+        <nav class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('overview')">Study Overview</button>
+            <button class="nav-tab" onclick="showTab('treatments')">Treatment Outcomes</button>
+            <button class="nav-tab" onclick="showTab('demographics')">Advanced Demographics</button>
+            <button class="nav-tab" onclick="showTab('healthcare')">Healthcare Impact</button>
+            <button class="nav-tab" onclick="showTab('context')">Healthcare Context</button>
+        </nav>
+        
+        <!-- Treatment Outcomes Tab -->
+        <div id="treatments" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h3>📊 Opioid Use Reduction (Scaled View)</h3>
+                </div>
+                <div class="card-content">
+                    <div class="chart-container">
+                        <canvas id="opioidChart"></canvas>
+                    </div>
+                    <div class="info-box">
+                        <h4>💡 Key Insight</h4>
+                        <p>This chart uses a scaled Y-axis (0-5%) to clearly show the dramatic reduction in opioid use. The actual percentages are very small, demonstrating the effectiveness of MOUD treatment.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>🏥 Healthcare Utilization Impact</h3>
+                </div>
+                <div class="card-content">
+                    <div class="chart-container">
+                        <canvas id="healthcareChart"></canvas>
+                    </div>
+                    <div class="info-box">
+                        <h4>📋 Understanding the Numbers</h4>
+                        <p><strong>Decimal Values Explained:</strong></p>
+                        <ul>
+                            <li>0.14 = 0.14 visits per patient (about 1 visit per 7 patients)</li>
+                            <li>0.10 = 0.10 visits per patient (about 1 visit per 10 patients)</li>
+                            <li>These represent average emergency department visits per patient over the study period</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Advanced Demographics Tab -->
+        <div id="demographics" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h3>👥 Interactive Demographics Explorer</h3>
+                </div>
+                <div class="card-content">
+                    <div class="demo-selector">
+                        <h4>Select Demographic View:</h4>
+                        <div class="demo-buttons">
+                            <button class="demo-btn active" onclick="showDemographic('overview')">Overview</button>
+                            <button class="demo-btn" onclick="showDemographic('gender')">Gender</button>
+                            <button class="demo-btn" onclick="showDemographic('age')">Age Groups</button>
+                            <button class="demo-btn" onclick="showDemographic('race')">Race/Ethnicity</button>
+                            <button class="demo-btn" onclick="showDemographic('education')">Education</button>
+                        </div>
+                    </div>
+                    
+                    <div class="demographics-container">
+                        <div>
+                            <div class="chart-container">
+                                <canvas id="demographicsChart"></canvas>
+                            </div>
+                        </div>
+                        <div id="demographics-details">
+                            <!-- Demographics details will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Study Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="card">
+                <div class="card-header">
+                    <h3>🔬 CDC MOUD Study Overview</h3>
+                </div>
+                <div class="card-content">
+                    <div class="info-box">
+                        <h4>📍 Study Details</h4>
+                        <ul>
+                            <li><strong>Duration:</strong> March 2018 - May 2021 (3+ years)</li>
+                            <li><strong>Participants:</strong> 1,974 patients across 15 US cities</li>
+                            <li><strong>Follow-up:</strong> 18 months per patient</li>
+                            <li><strong>Completion Rate:</strong> 53% at final assessment</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="overviewChart"></canvas>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h4>🎯 Study Objectives</h4>
+                        <ul>
+                            <li>Identify factors that influence the type of OUD treatment offered to patients</li>
+                            <li>Better understand patient and outpatient treatment facility factors associated with key OUD treatment outcomes</li>
+                            <li>Identify relevant antecedents or co-occurring conditions that could be addressed through primary prevention</li>
+                            <li>Inform evidence-based practices and OUD treatment policies</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>🗺️ Study Locations</h3>
+                </div>
+                <div class="card-content">
+                    <div class="demographics-container">
+                        <div>
+                            <div class="info-box">
+                                <h4>🏙️ Major Metropolitan Areas</h4>
+                                <ul>
+                                    <li><strong>Northeast:</strong> Boston MA, New York NY</li>
+                                    <li><strong>Southeast:</strong> Birmingham AL, Raleigh-Durham NC</li>
+                                    <li><strong>Midwest:</strong> Chicago IL, Cincinnati OH</li>
+                                    <li><strong>Southwest:</strong> Dallas TX, Phoenix AZ</li>
+                                    <li><strong>West:</strong> Denver CO, Los Angeles CA, San Francisco CA, Salt Lake City UT, Seattle WA</li>
+                                    <li><strong>Other:</strong> Huntington WV, Washington DC Metro</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="info-box">
+                                <h4>📊 Response Rates by Timepoint</h4>
+                                <ul>
+                                    <li><strong>Baseline:</strong> 100% (1,974 patients)</li>
+                                    <li><strong>3-Month:</strong> 72% (1,421 patients)</li>
+                                    <li><strong>6-Month:</strong> 68% (1,342 patients)</li>
+                                    <li><strong>12-Month:</strong> 52% (1,026 patients)</li>
+                                    <li><strong>18-Month:</strong> 53% (1,046 patients)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>📈 Key Study Findings</h3>
+                </div>
+                <div class="card-content">
+                    <div class="demographics-container">
+                        <div>
+                            <div class="info-box">
+                                <h4>🎯 Treatment Effectiveness</h4>
+                                <ul>
+                                    <li><strong>Opioid Use Reduction:</strong> 88% decrease (2.5% → 0.3%)</li>
+                                    <li><strong>Treatment Retention:</strong> Varies by medication type</li>
+                                    <li><strong>Healthcare Utilization:</strong> 29% reduction in ED visits</li>
+                                    <li><strong>Long-term Outcomes:</strong> Sustained improvement over 18 months</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="info-box">
+                                <h4>💊 MOUD Distribution at Baseline</h4>
+                                <ul>
+                                    <li><strong>Methadone:</strong> 62% (1,224 patients)</li>
+                                    <li><strong>Buprenorphine:</strong> 33% (651 patients)</li>
+                                    <li><strong>Naltrexone:</strong> 4.4% (86 patients)</li>
+                                    <li><strong>Multiple Options:</strong> Some patients used combination therapy</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Healthcare Impact Tab -->
+        <div id="healthcare" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h3>🏥 Healthcare System Impact</h3>
+                </div>
+                <div class="card-content">
+                    <div class="chart-container">
+                        <canvas id="healthcareDetailChart"></canvas>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h4>📊 Understanding Healthcare Utilization Metrics</h4>
+                        <ul>
+                            <li><strong>Emergency Department Visits:</strong> Average visits per patient decreased from 0.14 to 0.10</li>
+                            <li><strong>What this means:</strong> At baseline, roughly 1 in every 7 patients visited the ED</li>
+                            <li><strong>Improvement:</strong> By 18 months, only 1 in every 10 patients needed emergency care</li>
+                            <li><strong>Cost Impact:</strong> Significant reduction in expensive emergency interventions</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>💰 Economic Impact of MOUD Treatment</h3>
+                </div>
+                <div class="card-content">
+                    <div class="demographics-container">
+                        <div>
+                            <div class="info-box">
+                                <h4>💵 Cost Savings</h4>
+                                <ul>
+                                    <li><strong>ED Visit Cost:</strong> ~$1,400 per visit average</li>
+                                    <li><strong>Reduction:</strong> 29% fewer ED visits</li>
+                                    <li><strong>Per Patient Savings:</strong> ~$400 annually</li>
+                                    <li><strong>Total Study Savings:</strong> ~$790,000 annually</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="info-box">
+                                <h4>📈 Broader Healthcare Benefits</h4>
+                                <ul>
+                                    <li><strong>Overdose Prevention:</strong> Reduced life-threatening incidents</li>
+                                    <li><strong>Primary Care:</strong> Increased engagement with preventive care</li>
+                                    <li><strong>Mental Health:</strong> Better access to comprehensive treatment</li>
+                                    <li><strong>Social Services:</strong> Reduced burden on social safety net</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>🚑 Emergency Department Impact</h3>
+                </div>
+                <div class="card-content">
+                    <div class="chart-container">
+                        <canvas id="edImpactChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Healthcare Context Tab -->
+        <div id="context" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h3>🏛️ Understanding US Healthcare & MOUD</h3>
+                </div>
+                <div class="card-content">
+                    <div class="info-box">
+                        <h4>🩺 What is Opioid Use Disorder (OUD)?</h4>
+                        <ul>
+                            <li><strong>Definition:</strong> A chronic medical condition characterized by compulsive opioid use despite harmful consequences</li>
+                            <li><strong>Prevalence:</strong> Over 6 million Americans affected in 2022</li>
+                            <li><strong>Impact:</strong> Leading cause of accidental death in the US</li>
+                            <li><strong>Treatment:</strong> Requires comprehensive medical and social support</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="demographics-container">
+                        <div>
+                            <div class="info-box">
+                                <h4>💊 MOUD Medications Explained</h4>
+                                <ul>
+                                    <li><strong>Buprenorphine (Suboxone):</strong> Partial agonist, reduces cravings safely</li>
+                                    <li><strong>Methadone:</strong> Full agonist, requires specialized clinic visits</li>
+                                    <li><strong>Naltrexone (Vivitrol):</strong> Antagonist, blocks opioid effects completely</li>
+                                    <li><strong>Evidence-Based:</strong> All three are FDA-approved and clinically proven</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="info-box">
+                                <h4>🏥 US Healthcare System Context</h4>
+                                <ul>
+                                    <li><strong>Access Barriers:</strong> Insurance, geography, provider availability</li>
+                                    <li><strong>Cost Issues:</strong> Treatment can be expensive without coverage</li>
+                                    <li><strong>Stigma:</strong> Social barriers to seeking treatment</li>
+                                    <li><strong>Policy Impact:</strong> Federal and state regulations affect access</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>📊 Why This Study Matters</h3>
+                </div>
+                <div class="card-content">
+                    <div class="demographics-container">
+                        <div>
+                            <div class="info-box">
+                                <h4>🎯 Policy Implications</h4>
+                                <ul>
+                                    <li><strong>Treatment Funding:</strong> Guides federal and state investment priorities</li>
+                                    <li><strong>Provider Training:</strong> Informs medical education requirements</li>
+                                    <li><strong>Insurance Coverage:</strong> Supports coverage mandate decisions</li>
+                                    <li><strong>Program Expansion:</strong> Shows which treatments work best where</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="info-box">
+                                <h4>🌎 Broader Impact</h4>
+                                <ul>
+                                    <li><strong>Overdose Deaths:</strong> MOUD reduces mortality by 50%+</li>
+                                    <li><strong>Healthcare Costs:</strong> $790K savings in this study alone</li>
+                                    <li><strong>Criminal Justice:</strong> Reduces incarceration rates</li>
+                                    <li><strong>Families:</strong> Keeps families together, children safe</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>🔬 Study Methodology</h3>
+                </div>
+                <div class="card-content">
+                    <div class="info-box">
+                        <h4>📋 Research Design</h4>
+                        <ul>
+                            <li><strong>Type:</strong> Longitudinal observational cohort study</li>
+                            <li><strong>Setting:</strong> Outpatient treatment facilities (not randomized trial)</li>
+                            <li><strong>Data Collection:</strong> Web-based, self-administered questionnaires</li>
+                            <li><strong>Follow-up:</strong> 5 assessment points over 18 months</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="demographics-container">
+                        <div>
+                            <div class="info-box">
+                                <h4>📈 Strengths</h4>
+                                <ul>
+                                    <li><strong>Large Sample:</strong> Nearly 2,000 patients</li>
+                                    <li><strong>Geographic Diversity:</strong> 15 cities across US</li>
+                                    <li><strong>Real-World Data:</strong> Actual treatment settings</li>
+                                    <li><strong>Long Follow-up:</strong> 18-month outcomes</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="info-box">
+                                <h4>⚠️ Limitations</h4>
+                                <ul>
+                                    <li><strong>Attrition:</strong> 47% dropped out by 18 months</li>
+                                    <li><strong>Self-Report:</strong> Relies on patient honesty</li>
+                                    <li><strong>Selection Bias:</strong> Only enrolled patients</li>
+                                    <li><strong>No Control Group:</strong> Observational design</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>🎓 For Healthcare Newcomers</h3>
+                </div>
+                <div class="card-content">
+                    <div class="info-box">
+                        <h4>🔍 Key Terms Glossary</h4>
+                        <ul>
+                            <li><strong>Longitudinal Study:</strong> Follows same patients over time</li>
+                            <li><strong>Cohort:</strong> Group of people studied together</li>
+                            <li><strong>Baseline:</strong> Starting point measurements</li>
+                            <li><strong>Follow-up:</strong> Subsequent measurements over time</li>
+                            <li><strong>Attrition:</strong> Participants who drop out of study</li>
+                            <li><strong>Self-Report:</strong> Information provided by patients themselves</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="demographics-container">
+                        <div>
+                            <div class="info-box">
+                                <h4>📊 Reading the Data</h4>
+                                <ul>
+                                    <li><strong>Percentages:</strong> Show proportion of patients</li>
+                                    <li><strong>Rates:</strong> Frequency of events (like ED visits)</li>
+                                    <li><strong>Trends:</strong> Changes over time periods</li>
+                                    <li><strong>Correlations:</strong> Relationships between factors</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="info-box">
+                                <h4>🎯 What Success Looks Like</h4>
+                                <ul>
+                                    <li><strong>Reduced Opioid Use:</strong> Fewer positive drug tests</li>
+                                    <li><strong>Treatment Retention:</strong> Staying in therapy</li>
+                                    <li><strong>Fewer Emergencies:</strong> Less crisis intervention needed</li>
+                                    <li><strong>Better Quality of Life:</strong> Employment, housing, relationships</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading enhanced dashboard data...</p>
+        </div>
+    </div>
+    
+    <script>
+        let dashboardData = null;
+        let charts = {};
+        let currentDemographic = 'overview';
+        
+        // Tab switching
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Initialize charts when tabs are shown
+            setTimeout(() => {
+                if (tabName === 'overview') {
+                    initializeOverviewChart();
+                } else if (tabName === 'treatments') {
+                    initializeOpioidChart();
+                    initializeHealthcareChart();
+                } else if (tabName === 'demographics') {
+                    initializeDemographicsChart();
+                } else if (tabName === 'healthcare') {
+                    initializeHealthcareDetailChart();
+                    initializeEDImpactChart();
+                }
+            }, 100);
+        }
+        
+        // Demographics selector
+        function showDemographic(type) {
+            currentDemographic = type;
+            document.querySelectorAll('.demo-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            updateDemographicsDisplay();
+        }
+        
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                const cacheBuster = new Date().getTime();
+                const response = await fetch(`dashboard_data.json?v=${cacheBuster}`);
+                dashboardData = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                console.log('Enhanced dashboard data loaded:', dashboardData);
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                document.getElementById('loading').innerHTML = '<p>Error loading data.</p>';
+            }
+        }
+        
+        // Initialize opioid chart with better scaling
+        function initializeOpioidChart() {
+            if (!dashboardData || charts.opioidChart) return;
+            
+            const outcomes = dashboardData.treatment_outcomes;
+            const timepoints = Object.keys(outcomes).sort();
+            
+            const ctx = document.getElementById('opioidChart');
+            if (ctx) {
+                const opioidRates = timepoints.map(tp => outcomes[tp].opioid_rate);
+                
+                charts.opioidChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: timepoints.map(tp => tp.replace('_', ' ').toUpperCase()),
+                        datasets: [{
+                            label: 'Patients Using Opioids (%)',
+                            data: opioidRates,
+                            backgroundColor: 'rgba(244, 67, 54, 0.8)',
+                            borderColor: '#f44336',
+                            borderWidth: 3,
+                            borderRadius: 12,
+                            borderSkipped: false,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Opioid Use Reduction Over Time (March 2018 - May 2021)',
+                                font: { size: 18, weight: 'bold' },
+                                color: '#1d1d1f'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.parsed.y}% of patients used opioids in past 30 days`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 3, // Scale to show small values clearly
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    },
+                                    font: { size: 14 }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Percentage of Patients',
+                                    font: { size: 16, weight: 'bold' }
+                                },
+                                grid: {
+                                    color: 'rgba(0,0,0,0.05)'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: { size: 14 }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Study Timeline',
+                                    font: { size: 16, weight: 'bold' }
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Initialize healthcare chart with clear labels
+        function initializeHealthcareChart() {
+            if (!dashboardData || charts.healthcareChart) return;
+            
+            const utilization = dashboardData.healthcare_utilization;
+            const timepoints = Object.keys(utilization).sort();
+            
+            const ctx = document.getElementById('healthcareChart');
+            if (ctx) {
+                charts.healthcareChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: timepoints.map(tp => tp.replace('_', ' ').toUpperCase()),
+                        datasets: [{
+                            label: 'Average ED Visits per Patient',
+                            data: timepoints.map(tp => utilization[tp].avg_ed_visits),
+                            borderColor: '#007AFF',
+                            backgroundColor: 'rgba(0, 122, 255, 0.1)',
+                            borderWidth: 4,
+                            pointBackgroundColor: '#007AFF',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 3,
+                            pointRadius: 8,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Emergency Department Visits per Patient Over Time',
+                                font: { size: 18, weight: 'bold' }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.parsed.y;
+                                        const perPatients = Math.round(1 / value);
+                                        return `${value.toFixed(2)} visits per patient (≈1 visit per ${perPatients} patients)`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Average Visits per Patient',
+                                    font: { size: 16, weight: 'bold' }
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toFixed(2);
+                                    },
+                                    font: { size: 14 }
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Study Timeline (March 2018 - May 2021)',
+                                    font: { size: 16, weight: 'bold' }
+                                },
+                                ticks: {
+                                    font: { size: 14 }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Initialize sophisticated demographics chart
+        function initializeDemographicsChart() {
+            if (!dashboardData || !dashboardData.demographics) return;
+            
+            updateDemographicsDisplay();
+        }
+        
+        function updateDemographicsDisplay() {
+            if (!dashboardData) return;
+            
+            const demographics = dashboardData.demographics;
+            const ctx = document.getElementById('demographicsChart');
+            const detailsDiv = document.getElementById('demographics-details');
+            
+            // Destroy existing chart
+            if (charts.demographicsChart) {
+                charts.demographicsChart.destroy();
+            }
+            
+            let data, labels, title, details;
+            
+            switch (currentDemographic) {
+                case 'gender':
+                    data = Object.values(demographics.sex);
+                    labels = Object.keys(demographics.sex);
+                    title = 'Gender Distribution';
+                    details = generateDetails(demographics.sex, demographics.total_patients, 'Gender');
+                    break;
+                case 'age':
+                    data = Object.values(demographics.age_categories);
+                    labels = Object.keys(demographics.age_categories);
+                    title = 'Age Group Distribution';
+                    details = generateDetails(demographics.age_categories, demographics.total_patients, 'Age Group');
+                    break;
+                case 'race':
+                    data = Object.values(demographics.race_ethnicity);
+                    labels = Object.keys(demographics.race_ethnicity);
+                    title = 'Race/Ethnicity Distribution';
+                    details = generateDetails(demographics.race_ethnicity, demographics.total_patients, 'Race/Ethnicity');
+                    break;
+                case 'education':
+                    data = Object.values(demographics.education);
+                    labels = Object.keys(demographics.education);
+                    title = 'Education Level Distribution';
+                    details = generateDetails(demographics.education, demographics.total_patients, 'Education Level');
+                    break;
+                default:
+                    // Overview - show all major categories
+                    data = [
+                        demographics.sex.Female + demographics.sex.Male,
+                        Object.values(demographics.age_categories).reduce((a, b) => a + b, 0),
+                        Object.values(demographics.race_ethnicity).reduce((a, b) => a + b, 0),
+                        Object.values(demographics.education).reduce((a, b) => a + b, 0)
+                    ];
+                    labels = ['Gender Categories', 'Age Groups', 'Race/Ethnicity', 'Education Levels'];
+                    title = 'Demographics Overview';
+                    details = generateOverviewDetails(demographics);
+            }
+            
+            // Create chart
+            charts.demographicsChart = new Chart(ctx, {
+                type: currentDemographic === 'overview' ? 'bar' : 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#007AFF', '#5856D6', '#AF52DE', '#FF2D92',
+                            '#FF3B30', '#FF9500', '#FFCC02', '#32D74B',
+                            '#00C7BE', '#64D2FF'
+                        ].slice(0, data.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: title,
+                            font: { size: 20, weight: 'bold' }
+                        },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: { size: 14 }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update details
+            detailsDiv.innerHTML = details;
+        }
+        
+        function generateDetails(data, total, category) {
+            let html = `<div class="info-box"><h4>📊 ${category} Breakdown</h4><ul>`;
+            
+            Object.entries(data)
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([key, value]) => {
+                    const percent = ((value / total) * 100).toFixed(1);
+                    html += `<li><strong>${key}:</strong> ${value.toLocaleString()} patients (${percent}%)</li>`;
+                });
+            
+            html += '</ul></div>';
+            return html;
+        }
+        
+        function generateOverviewDetails(demographics) {
+            return `
+                <div class="info-box">
+                    <h4>📈 Study Population Summary</h4>
+                    <ul>
+                        <li><strong>Total Participants:</strong> ${demographics.total_patients.toLocaleString()}</li>
+                        <li><strong>Gender Balance:</strong> ${((demographics.sex.Female / demographics.total_patients) * 100).toFixed(1)}% Female</li>
+                        <li><strong>Most Common Age:</strong> 26-35 years</li>
+                        <li><strong>Primary Race/Ethnicity:</strong> Black/African American</li>
+                        <li><strong>Education Level:</strong> Some College most common</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        function initializeOverviewChart() {
+            if (!dashboardData || charts.overviewChart) return;
+            
+            const outcomes = dashboardData.treatment_outcomes;
+            const timepoints = Object.keys(outcomes).sort();
+            
+            const ctx = document.getElementById('overviewChart');
+            if (ctx) {
+                charts.overviewChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: timepoints.map(tp => tp.replace('_', ' ').toUpperCase()),
+                        datasets: [
+                            {
+                                label: 'Buprenorphine Treatment (%)',
+                                data: timepoints.map(tp => outcomes[tp].bup_rate),
+                                borderColor: '#007AFF',
+                                backgroundColor: 'rgba(0, 122, 255, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Methadone Treatment (%)',
+                                data: timepoints.map(tp => outcomes[tp].mmt_rate),
+                                borderColor: '#5856D6',
+                                backgroundColor: 'rgba(88, 86, 214, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Naltrexone Treatment (%)',
+                                data: timepoints.map(tp => outcomes[tp].ntx_rate),
+                                borderColor: '#AF52DE',
+                                backgroundColor: 'rgba(175, 82, 222, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'MOUD Treatment Adherence Over Time (March 2018 - May 2021)',
+                                font: { size: 18, weight: 'bold' }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Percentage of Patients on Treatment',
+                                    font: { size: 16 }
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function initializeHealthcareDetailChart() {
+            if (!dashboardData || charts.healthcareDetailChart) return;
+            
+            const utilization = dashboardData.healthcare_utilization;
+            const timepoints = Object.keys(utilization).sort();
+            
+            const ctx = document.getElementById('healthcareDetailChart');
+            if (ctx) {
+                charts.healthcareDetailChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: timepoints.map(tp => tp.replace('_', ' ').toUpperCase()),
+                        datasets: [{
+                            label: 'Average ED Visits per Patient',
+                            data: timepoints.map(tp => utilization[tp].avg_ed_visits),
+                            borderColor: '#FF3B30',
+                            backgroundColor: 'rgba(255, 59, 48, 0.1)',
+                            borderWidth: 4,
+                            pointBackgroundColor: '#FF3B30',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 3,
+                            pointRadius: 8,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Healthcare Utilization: Emergency Department Visits',
+                                font: { size: 18, weight: 'bold' }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.parsed.y;
+                                        const perPatients = Math.round(1 / value);
+                                        return [
+                                            `${value.toFixed(2)} visits per patient`,
+                                            `≈ 1 visit per ${perPatients} patients`,
+                                            `29% reduction from baseline to 18 months`
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Average Visits per Patient',
+                                    font: { size: 16, weight: 'bold' }
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toFixed(2);
+                                    },
+                                    font: { size: 14 }
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Study Timeline (March 2018 - May 2021)',
+                                    font: { size: 16, weight: 'bold' }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function initializeEDImpactChart() {
+            if (!dashboardData || charts.edImpactChart) return;
+            
+            const utilization = dashboardData.healthcare_utilization;
+            const timepoints = Object.keys(utilization).sort();
+            
+            const ctx = document.getElementById('edImpactChart');
+            if (ctx) {
+                // Calculate patients with ED visits
+                const patientsWithVisits = timepoints.map(tp => utilization[tp].patients_with_ed_visits);
+                const totalPatients = utilization[timepoints[0]].total_patients;
+                
+                charts.edImpactChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: timepoints.map(tp => tp.replace('_', ' ').toUpperCase()),
+                        datasets: [{
+                            label: 'Patients with ED Visits',
+                            data: patientsWithVisits,
+                            backgroundColor: 'rgba(255, 59, 48, 0.8)',
+                            borderColor: '#FF3B30',
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Number of Patients Requiring Emergency Care',
+                                font: { size: 18, weight: 'bold' }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.parsed.y;
+                                        const percent = ((value / totalPatients) * 100).toFixed(1);
+                                        return [
+                                            `${value} patients visited ED`,
+                                            `${percent}% of total study population`
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Patients',
+                                    font: { size: 16, weight: 'bold' }
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Study Timeline',
+                                    font: { size: 16, weight: 'bold' }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+        });
+    </script>
+</body>
+</html>
