@@ -1,4 +1,4 @@
-# MOUD Study Dashboard - Enhanced Apple-Style Interface
+# MOUD Study Dashboard 
 
 A sophisticated, interactive data analytics dashboard for understanding Medications for Opioid Use Disorder (MOUD) study outcomes and US healthcare trends. Features a modern Apple-inspired design with comprehensive educational content.
 
